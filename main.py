@@ -80,5 +80,6 @@ if __name__=='__main__':
 
     message = tabulate(df_merged, headers='keys', tablefmt='psql',  showindex=False).replace("+",'*').replace('-','_')
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}"
+    print(BOT_TOKEN, CHAT_ID)
     print(requests.get(url).json())
     print(message)
