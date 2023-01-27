@@ -2,7 +2,9 @@ name: aurora_watcher
 on:
   push:
     branches:
-      - master
+    - ["master"]
+    schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   build:
