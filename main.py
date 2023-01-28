@@ -78,7 +78,7 @@ if __name__=='__main__':
             left_on='date_time', 
             right_on='dt').drop(columns=['dt', 'noaa_scale'])
 
-    message = tabulate(df_merged, headers='keys', tablefmt='psql',  showindex=False).replace("+",'*').replace('-','_')
+    message = tabulate(df_merged, headers='keys', tablefmt='psql',  showindex=False)
     parse_mode = 'html'
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text=<pre>{message}</pre>&parse_mode={parse_mode}"
     print(BOT_TOKEN, CHAT_ID)
