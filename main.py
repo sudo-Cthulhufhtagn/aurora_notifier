@@ -62,14 +62,15 @@ def parse_swpc(response: json):
     
 
     
-
 if __name__=='__main__':
     html_content = requests.get(LINK_METEOBLUE).text
     soup = BeautifulSoup(html_content, 'html.parser')
     df_meteoblue = parse_meateoblue(soup=soup)
+    df_meteoblue.date_time = df_meteoblue.date_time.dt.tz_localize('Europe/Tallinn').dt.tz_convert('UTC')
 
     response = requests.get(LINK_SWPC)
     df_swpc = parse_swpc(response=response)
+    df_swpc.dt = df_swpc.dt.dt.tz_localize('UTC')
     
     df_merged = pd.merge(
             left=df_meteoblue.drop(columns=['date', 'time']),
@@ -77,6 +78,8 @@ if __name__=='__main__':
             how='inner', # outer
             left_on='date_time', 
             right_on='dt').drop(columns=['dt', 'noaa_scale'])
+
+    df_merged['date_time'] = df_merged['date_time'].dt.tz_localize(None)
 
     message = tabulate(df_merged, headers='keys', tablefmt='psql',  showindex=False).replace("+",'*').replace('-','_')
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}"
