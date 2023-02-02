@@ -80,8 +80,8 @@ if __name__=='__main__':
             right_on='dt').drop(columns=['dt', 'noaa_scale'])
 
     df_merged['date_time'] = df_merged['date_time'].dt.tz_localize(None)
-
-    message = tabulate(df_merged, headers='keys', tablefmt='psql',  showindex=False).replace("+",'*').replace('-','_')
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}"
+    message = tabulate(df_merged, headers='keys', tablefmt='psql',  showindex=False)
+    parse_mode = 'html'
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text=<pre>{message}</pre>&parse_mode={parse_mode}"
     requests.get(url).json()
     print(message)
