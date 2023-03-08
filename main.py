@@ -14,7 +14,8 @@ CHAT_ID = os.getenv('CHAT_ID')
 
 LINK_METEOBLUE = "https://www.meteoblue.com/en/weather/outdoorsports/seeing/tartu_estonia_588335"
 LINK_SWPC = 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json'
-
+TIMEZONE = 'Europe/Tallinn'
+kp_threshold = 3
 
 def parse_meateoblue(soup: BeautifulSoup):
     time_h = []
@@ -66,7 +67,7 @@ if __name__=='__main__':
     html_content = requests.get(LINK_METEOBLUE).text
     soup = BeautifulSoup(html_content, 'html.parser')
     df_meteoblue = parse_meateoblue(soup=soup)
-    df_meteoblue.date_time = df_meteoblue.date_time.dt.tz_localize('Europe/Tallinn').dt.tz_convert('UTC')
+    df_meteoblue.date_time = df_meteoblue.date_time.dt.tz_localize(TIMEZONE).dt.tz_convert('UTC')
 
     response = requests.get(LINK_SWPC)
     df_swpc = parse_swpc(response=response)
@@ -74,13 +75,14 @@ if __name__=='__main__':
     
     df_merged = pd.merge(
             left=df_meteoblue.drop(columns=['date', 'time']),
-            right=df_swpc.drop(columns=['time_tag'])[df_swpc.kp.astype(float)>2], 
+            right=df_swpc.drop(columns=['time_tag'])[df_swpc.kp.astype(float)>kp_threshold], 
             how='inner', # outer
             left_on='date_time', 
             right_on='dt').drop(columns=['dt', 'noaa_scale'])
 
     df_merged['date_time'] = df_merged['date_time'].dt.tz_localize(None).dt.strftime('%Hh %dd')
-    message = tabulate(df_merged[['date_time', 'kp', 'low', 'mid', 'high']], headers='keys', tablefmt='psql',  showindex=False).replace('+', 'x')
+    if df_merged.shape[0] == 0: quit() # if there is nothing matching conditions
+    message = tabulate(df_merged[['date_time', 'kp', 'low', 'mid', 'high']], headers='keys', tablefmt='psql',  showindex=False).replace('+', 'x') # prettier format
     parse_mode = 'html'
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={CHAT_ID}&text=<pre>{message}</pre>&parse_mode={parse_mode}"
     requests.get(url).json()
