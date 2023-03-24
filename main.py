@@ -67,7 +67,7 @@ if __name__=='__main__':
     html_content = requests.get(LINK_METEOBLUE).text
     soup = BeautifulSoup(html_content, 'html.parser')
     df_meteoblue = parse_meateoblue(soup=soup)
-    df_meteoblue.date_time = df_meteoblue.date_time.dt.tz_localize(TIMEZONE, ambiguous='infer').dt.tz_convert('UTC')
+    df_meteoblue.date_time = df_meteoblue.date_time.dt.tz_localize(TIMEZONE, nonexistent='shift_forward').dt.tz_convert('UTC')
 
     response = requests.get(LINK_SWPC)
     df_swpc = parse_swpc(response=response)
